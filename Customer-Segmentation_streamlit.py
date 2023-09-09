@@ -109,19 +109,26 @@ elif choice == 'EDA':
     st.text('{:,} transactions don\'t have a customer id'.format(df[df.Customer_id.isnull()].shape[0]))
     st.text('{:,} unique customer_id'.format(len(df.Customer_id.unique())))
 
-    st.write('### Sales vs Time')
-    st.line_chart(
-        df,
-        x = 'day',
-        y = 'Sales')
+    # Vẽ biểu đồ đường sử dụng matplotlib và seaborn
+    df_time = df[['day', 'Sales']]
+    df_time['day'] = pd.to_datetime(df_time['day'])
+    df_time['month'] = df_time['day'].dt.strftime('%Y-%m')
+    monthly_sales = df_time.groupby('month')['Sales'].sum().reset_index()
+    fig = px.line(monthly_sales, x='month', y='Sales', title='Doanh số theo từng tháng')
+    st.plotly_chart(fig)
     
-    st.write('### Sales by year')
+
     temp=pd.DataFrame()
     temp['Year']= pd.DatetimeIndex(df['day']).year
     temp['Sales'] = df.Sales
     group_year = temp.groupby('Year').sum()
-    st.dataframe(group_year)
+    # Vẽ biểu đồ cột
+    fig = px.bar(group_year, x=group_year.index, y='Sales', labels={'Year': 'Năm', 'Sales': 'Doanh số'}, title='Doanh số theo năm')
+    st.plotly_chart(fig)
 
+    # Hiển thị bảng dữ liệu
+    st.write('### Doanh số theo năm')
+    st.dataframe(group_year)
 
 elif choice == 'Build Project':
     st.title('Data RFM')
